@@ -163,16 +163,17 @@ function drawPieChart(){
 
       const color = d3.scaleOrdinal(["#66c2a5","#fc8d62","#8da0cb",
         "#e78ac3","#a6d854","#ffd92f"]);
-      let radius = height/2;
+      let radius = height/2.5;
       //set up the svg
       var containerDiv = d3.select(this);
       var svg = containerDiv.append('svg')
-                          .attr('width', width)
-                          .attr('height', height)
+                          .attr('width', svgWidth)
+                          .attr('height', svgHeight)
                           .attr('class', 'piechart');
       //Set a grouping container
       var gPie = svg.append('g')
-                          .attr('transform', 'translate('+ width/2 +','+ height/2 +')')
+                          .attr('transform', 'translate('+ (width-50)/2 +','+ height/2 +')')
+                          
       //create the pie-s layout
       var pie = d3.pie()
                   .sort(null)
@@ -195,19 +196,52 @@ function drawPieChart(){
                   .style('opacity', .75)
                   .attr('d', arc);
       //Set the text for the pie
-      let pieText = gPie.selectAll('text')
+      let pieText = gPie.selectAll('.pie-text')
                   .data(pie).enter().append('text')
+                  .attr('class', 'pie-text')
                   .each(function(d){
                     let center = arc.centroid(d);
                     d3.select(this)
                       .attr('x', center[0])
                       .attr('y', center[1])
                       .attr('text-anchor', 'middle')
-                      .style('font-size', '2em')
+                      .style('font-size', '1.5em')
                       .style('font-weight', 'bold')
                       .style('fill', 'white')
-                      .text(d.data.count)
+                      .text(d.data.count);
                   })
+                  .on('mouseover', function(){
+                    //change the text to course
+                    d3.select(this)
+                        .text('Course Here')
+                        .style('font-size', '.5em')
+                  })
+                  .on('mouseout', function(d){
+                    d3.select(this)
+                        .text(d.data.count)
+                        .style('font-size', '1.5em');
+                  });
+      //Show legend for the pie
+      let gLegends = svg.append('g')
+                        .attr('transform', 'translate('+ width*0.9 +','+ margin.top +')')
+                        .attr('class', 'legends')
+                        .selectAll('.legend')
+                      .data(pie);
+      let legend = gLegends.enter().append('g')
+                        .attr('transform', function(d,i){
+                          return 'translate('+ 0 +','+ (i+1)*20 +')'
+                        });
+      let legendRect = legend.append('rect')
+                          .attr('width', 20)
+                          .attr('height', 20)
+                          .style('fill', function(d,i){ return color(d.index)})
+                          .style('stroke', 'white');
+      let legendText = legend.append('text')
+                          .text(function(d,i){ return d.data.grade})
+                          .attr('x', 20)
+                          .attr('y', 15)
+                          .style('fill', function(d){ return color(d.index)})
+                          .style('font-weight', 'bold')
     });
   }//end drawPie
 
