@@ -417,53 +417,44 @@ function drawBarChart(){
 
   return drawBar;
 }//end drawBarChart
+
 /**
-  * TASK 5:: IMPLEMENTATION OF LINE CHART
+  * TASK 4:: IMPLEMENTATION OF LINE CHART
   */
- function lineDataProcessor(){
-  var JSON_DATA = "data/example.json"
-  d3.json(JSON_DATA).then(function(response){
-      // logger(response)
-      return response
-  })
-  .then(function(data){
-     var line = drawLineChart().data(data)
+ function lineDataProcessor(divId){
+  //Data needed will be Session and Average performance for the session
+  let sessionPerformance = [
+            {session: 'Kinder', performance: 95},
+            {session: 'Pry 1', performance: 82},
+            {session: 'Pry 2', performance: 75},
+            {session: 'Pry 3', performance: 90},
+            {session: 'Pry 4', performance: 80},
+            {session: 'Pry 5', performance: 77}
+  ];
 
-     d3.select("#performance-line").call(line)
-  })
- }
+  var lineChart = drawLineChart().data(sessionPerformance).divId(divId);
+
+  d3.select(divId).call(lineChart);
+
+ }//end processor
  function drawLineChart(){
+   //updatables
+   let data;
+   let divId;
 
-    // Declaration of variables
-    var containerWidth = parseInt(($('#performance-line').parent().css('width')))//.replace(/px/gi,'')
-    var containerHeight = parseInt(($('#performance-line').parent().css('height')))
-    var svgWidth = containerWidth-50, svgHeight = 300,
-        margin = {top: 50, right: 50, bottom: 50, left: 50},
-        width = svgWidth - margin.left - margin.right,
-        height = svgHeight - margin.top - margin.bottom;
-
-    // logger("==containerWidth=="+ containerWidth)
-    // Constant time parse
     const parseTime = d3.timeParse('%x')
-    // Updatables
-    var data;
 
     function drawLine(selection){
         selection.each(function(){
-            // processs the data for use
-            var monthlyExpenses = data['month_overview'].map(function(d){
-                return {
-                    date: parseTime(d.Date),
-                    budget: d.Expense
-                }
-            });
-            var dailyBudget = data['daily_budget']
+
+          let containerWidth = parseInt(($(divId).parent().css('width')))
+          let svgWidth = containerWidth, svgHeight = containerWidth*.65,
+              margin = {top: 10, bottom: 50, right: 10, left: 50},
+              width = svgWidth - margin.left, height = svgHeight - margin.bottom;            
 
             var containerDiv = d3.select(this)
             var svg = containerDiv.append('svg')
-            // logger(selection)
-            // Select and format the svg
-            var svg = svg.attr('width', svgWidth)
+                            .attr('width', svgWidth)
                             .attr('height', svgHeight)
             
             // Place a master container in svg and format
@@ -471,19 +462,21 @@ function drawBarChart(){
                             .attr('transform', 'translate('+ margin.left +',' +margin.top+')')
                             .attr('class', 'container')
                             .style('fill', 'green')
-                chart.append('text')
-                            .attr('x', margin.left)
-                            .text('Expenses made this month')
+                // chart.append('text')
+                //             .attr('x', margin.left)
+                //             .text('Expenses made this month')
             // Define custom tooltip
-            var tooltip = d3.select('#performance-line')
+            var tooltip = d3.select(divId)
                           .append('div')
                             .attr('class', 'tooltip')
-            //setting the range and scale
-            var x = d3.scaleTime()
-                            .domain(d3.extent(monthlyExpenses, function(d){ return d.date}))
-                            .rangeRound([0, width])
+            //setting the range and scale            
+            var x = d3.scaleBand().rangeRound([0, width], 0.05)
+                            .domain(data.map(function(d) { return d.session; }));
+            // var x = d3.scaleTime()
+            //                 .domain(d3.extent(data, function(d){ return d.session}))
+            //                 .rangeRound([0, width])
             var y = d3.scaleLinear()
-                            .domain(d3.extent(monthlyExpenses, function(d){ return d.budget}))
+                            .domain([50, d3.max(data, function(d){ return d.performance})])
                             .rangeRound([height, 0])
             //set the x-y axis
             var xAxis = chart.append('g')
@@ -495,14 +488,14 @@ function drawBarChart(){
                                 .attr('class', 'x-axis')
                               .call(d3.axisLeft(y)
                                 .ticks(5)
-                                .tickFormat(function(d){ return '$'+d}))
+                                .tickFormat(function(d){ return d}))
             // Drawing gridlines
-            var yGrid = chart.append('g')
-                                .attr('class', 'grid')
-                              .call(d3.axisLeft(y)
-                                .ticks(5)
-                                .tickSize(-width)
-                                .tickFormat(''))
+            // var yGrid = chart.append('g')
+            //                     .attr('class', 'grid')
+            //                   .call(d3.axisLeft(y)
+            //                     .ticks(5)
+            //                     .tickSize(-width)
+            //                     .tickFormat(''))
 
             // Define the color gradient for the line chart
             var areaColor = chart.append('defs')
@@ -510,7 +503,7 @@ function drawBarChart(){
                             .attr('id', 'line-gradient')
                             .attr("gradientUnits", "userSpaceOnUse")
                             .attr('x1', 0).attr('x2', 0)
-                            .attr('y1', y(dailyBudget-30))
+                            .attr('y1', y(performance-30))
                             .selectAll('stop')
                           .data([
                                 {offset: '0%', color: 'aqua'},
@@ -523,41 +516,44 @@ function drawBarChart(){
             // Define the line tool first
             var line = d3.line()
                             .curve(d3.curveMonotoneX)
-                            .x(function(d){ return x(d.date)})
-                            .y(function(d){ return y(d.budget)})
+                            .x(function(d){ return x(d.session)})
+                            .y(function(d){ return y(d.performance)})
             // Now define the path
             var linePath = chart.append('path')
                             .attr('class', 'line-path')
-                          .datum(monthlyExpenses)  
+                          .datum(data)  
                             // .on('mouseover', function(d){
                             //     dotEnter.attr('r', 4)
                             // }) 
                             // .on('mouseout', function(d){
                             //     dotEnter.attr('r', 0)
-                            // })                        
+                            // })
+                            .attr('fill', 'none') 
+                            .attr('stroke', 'skyblue')
+                            .attr('stroke-width', 2)                      
                             .attr('d', line)
             // Let's define the area too
             var area = d3.area()
                             .curve(d3.curveMonotoneX)
-                            .x(function(d){ return x(d.date)})
+                            .x(function(d){ return x(d.session)})
                             .y0(height)
-                            .y1(function(d){ return y(d.budget)})
+                            .y1(function(d){ return y(d.performance)})
             // Set path for the area
             var areaPath = chart.append('path')
                             .attr('class', 'area-path')
-                          .datum(monthlyExpenses)
-                            // .style('fill', 'url(#area-gradient)')
+                          .datum(data)
                             .style('fill', 'skyblue')
+                            .style('opacity', .3)
                             .attr('d', area)
             
             // Draw circle to show score
             var dataCircle = chart.selectAll('.dot')
-                          .data(monthlyExpenses)
+                          .data(data)
             var dotEnter = dataCircle.enter()
                           .append('circle')
                             .attr('class', 'dot')
-                            .attr('cx', function(d){ return x(d.date)})
-                            .attr('cy', function(d){ return y(d.budget)})
+                            .attr('cx', function(d){ return x(d.session)})
+                            .attr('cy', function(d){ return y(d.performance)})
                             .attr('r', 4)
                             // .attr('visibility', 'hidden')
                             .on('mouseover', function(d,i){
@@ -586,9 +582,9 @@ function drawBarChart(){
                 const formatDay = d3.timeFormat('%a')
                 const formatDate = d3.timeFormat('%B %d')
                 const html = `
-                    <div><span class="header">Date: </span> ${formatDate(d.date)}</div>
-                    <div><span class="header">Budget: </span>$${d.budget}</div>
-                    <div><span class="header">Day: </span> ${formatDay(d.date)}</div>
+                    <div><span class="header"> </span> PERFORMANCE NODE</div>
+                    <div><span class="header">Performance: </span>${d.performance}</div>
+                    <div><span class="header">Session: </span> ${d.session}</div>
                 `;
                 tooltip.html(html);
                 // tooltip.text('We are here')
@@ -614,30 +610,39 @@ function drawBarChart(){
 
     }// end drawLine
 
-    // Setter-Getter for the expenses
     drawLine.data = function(value){
             if(!arguments.length){
-                return drawLine;//expenses;
+                return drawLine;
             }
             data = value;
             return drawLine;
         }
+    drawLine.divId = function(value){
+      if(!arguments.length)
+        return drawLine;
+      divId = value;
+      return drawLine;
+    }
 
     // return the chart
     return drawLine;
 
 }//end drawLines
 
+
+/**
+  * TASK 5:: IMPLEMENTATION OF LINE CHART
+  */
 /**
  * ALL CHARTS POWERHOUSE: THIS TRIGGERS ALL CHARTS WHEN PAGE LOADS
  */
 function learnersDashboard(){
-  lineDataProcessor();
   ringDataProcessor('#total-course', 'green');
   ringDataProcessor('#course-taken', 'orange');
   ringDataProcessor('#outstanding-course', 'red');
   pieDataProcessor('#grade-pie');
-  barDataProcessor('#performance-bar')
+  barDataProcessor('#performance-bar');
+  lineDataProcessor('#performance-line');
 
 }//end learnersDashboard
 
