@@ -14,6 +14,9 @@
 //Call Learner Dashboard here
 learnersDashboard();
 
+/**
+ * TASK 1:: IMPLEMENTATION OF RING CHARTS
+ */
 function ringDataProcessor(divId, color){
   //create a sample data
   var sampleData = {
@@ -114,7 +117,7 @@ function drawRingChart(){
 }//end ringchart
 
 /**
- * TASK 2:: IMPLEMENTATION OF PIE CHARTS
+ * TASK 2:: IMPLEMENTATION OF PIE CHART
  */
 function pieDataProcessor(divId){
   //Data required are Course names and Course grades
@@ -193,7 +196,6 @@ function drawPieChart(){
                   .style('fill', function(d){ return color(d.index) })
                   .style('stroke', 'white')
                   .style('stroke-width', '3px')
-                  .style('opacity', .75)
                   .attr('d', arc);
       //Set the text for the pie
       let pieText = gPie.selectAll('.pie-text')
@@ -265,6 +267,156 @@ function drawPieChart(){
   }
   return drawPie;
 }//end drawPieChart
+
+/**
+ * TASK 3:: IMPLEMENTATION OF BAR CHART
+ */
+function barDataProcessor(divId){
+  //Sample data with courses and score
+  var courseAndScore = [{ //In json format
+    courseName: 'P5', score: 73
+  },
+  {
+    courseName: 'Engexam1', score: 92
+  },
+  {
+    courseName: 'P2', score: 67
+  },
+  {
+    courseName: 'P3', score: 80
+  },
+  {
+    courseName: 'P4', score: 75
+  }];
+
+  //Instantiate and init chart
+  var barChart = drawBarChart().data(courseAndScore)
+                                .divId(divId);
+
+  d3.select(divId).call(barChart);
+
+}//end processor
+function drawBarChart(){
+  //updatables
+  let data;
+  let divId;
+
+  const FORMAT_PERCENTAGE = d3.format('.0%');
+
+  function drawBar(selection){
+    selection.each(function(){
+
+      let containerWidth = parseInt(($(divId).parent().css('width')))
+      let svgWidth = containerWidth, svgHeight = containerWidth*.65,
+          margin = {top: 10, bottom: 50, right: 10, left: 50},
+          width = svgWidth - margin.left, height = svgHeight - margin.bottom;
+
+      let color = d3.scaleOrdinal(d3.schemeCategory10)
+      var chart = d3.select(this)
+            .append("svg")
+              .attr("width", svgWidth)
+              .attr("height", svgHeight)
+              .attr('class', 'chart')            
+      var gChart = chart.append("g")
+              .attr('class', 'chart-container')
+              .attr("transform", 
+                  "translate(" + margin.left + "," + margin.top + ")");
+      //set scale and domain
+      var x = d3.scaleBand().rangeRound([0, width], 0.05);
+      var y = d3.scaleLinear().range([height, 0]);
+      x.domain(data.map(function(d) { return d.courseName; }));
+      y.domain([0, 100]);
+      //set up the X-Y axis
+      var gAxis = gChart.append('g')
+              .attr('class', 'axes')
+      var xAxis = gAxis.append("g")
+              .attr("class", "x-axis")
+              .attr("transform", "translate(0," + height + ")")
+              .call(d3.axisBottom(x))
+              .style('font-size', '.9em')
+              // xAxis.append('text')
+              //     .attr('class', 'xtitle')
+              //     .attr('fill', 'grey')
+              //     .text('Genres')
+              //     .attr("transform", "translate(100,"+ height +")")
+          xAxis.selectAll("text")
+              .style("text-anchor", "middle")
+              .style('font-weight', 'bold')
+              // .style("fill", function(d){ return color(d.courseName)})
+      var yAxis = gAxis.append("g")
+              .attr("class", "y-axis")
+              .call(d3.axisLeft(y).tickFormat(function(d){ return FORMAT_PERCENTAGE(d/100)}))              
+              .style('font-size', '.9em')
+          // yAxis.append("text")
+          //     .attr('class', 'ytitle')
+          //     // .attr("transform", "rotate(-90)")
+          //     .attr("y", 6)
+          //     .attr("dy", "-.71em")
+          //     .attr('dx', '-1.5em')
+          //     .style('fill', 'grey')
+          //     .text(dataPointSelected)
+
+      //setup the bar with rect
+      var gBars = gChart.append('g')
+              .attr('class', 'bars')
+      var bar = gBars.selectAll('.bar').data(data, function(d){ return d})
+      
+      var rectBar = bar.enter().append('g')
+              .attr('class', 'bar')
+              // .merge(bar)
+              // .attr('transform', function(d,i){ return 'translate('+ i * x.bandwidth() +', 0)'})
+          rectBar.append("rect")
+              .attr('class', 'rect-bar')
+          //   .merge(bar)
+              .style("fill", function(d){ return color(d.courseName)})
+              .style('opacity', .75)
+              .attr("x", function(d) { return x(d.courseName); })
+              .attr('y', height)
+              .transition().duration(2000).ease(d3.easeExp)
+              .attr("y", function(d) { return y(d.score); })
+              .attr("width", x.bandwidth() - 5)
+              .attr("height", function(d) { return height - y(d.score); })
+      // .on('mouseover',function(d){ logger(d.score) });
+          rectBar.append('text')
+              .attr('class', 'bar-label')
+          //   .merge(bar)
+              .attr('transform', function(d){ return (' translate('+ x(d.courseName) +','+ (y(d.score) ) +') rotate(-90)')})
+              // .attr('x', function(d){return x(d.courseName)})
+              // .attr('y', function(d){ return y(d.score)+5})
+              .transition().duration(2000).ease(d3.easeExp)
+              .style("fill", function(d){ return color(d.courseName)})
+              .style('font-size', '12px')
+              .style('writing-mode', 'tb')
+              .attr('text-anchor', 'middle')
+              .attr('dy', '1.8em')
+              .attr('dx', '.55em')
+              .text(function(d){ return (d.score)})
+              // .attr('transform', function(d){ return 'rotate(90) translate('+ y(d.score) +','+ x(d.courseName) +')'})            
+          
+          logger('Bar chart should be on the screen now')
+
+          var t = d3.transition()
+                      .duration(500)
+                      .ease(d3.easeBackIn);
+
+    });    
+  }//end drawBar
+
+  drawBar.data = function(value){
+    if(!arguments.length)
+      return drawBar;
+    data = value;
+    return drawBar;
+  }
+  drawBar.divId = function(value){
+    if(!arguments.length)
+      return drawBar;
+    divId = value;
+    return drawBar;
+  }
+
+  return drawBar;
+}//end drawBarChart
 /**
   * TASK 5:: IMPLEMENTATION OF LINE CHART
   */
@@ -398,7 +550,7 @@ function drawPieChart(){
                             .style('fill', 'skyblue')
                             .attr('d', area)
             
-            // Draw circle to show datapoint
+            // Draw circle to show score
             var dataCircle = chart.selectAll('.dot')
                           .data(monthlyExpenses)
             var dotEnter = dataCircle.enter()
@@ -485,6 +637,7 @@ function learnersDashboard(){
   ringDataProcessor('#course-taken', 'orange');
   ringDataProcessor('#outstanding-course', 'red');
   pieDataProcessor('#grade-pie');
+  barDataProcessor('#performance-bar')
 
 }//end learnersDashboard
 
