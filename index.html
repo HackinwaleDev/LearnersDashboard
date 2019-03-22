@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Learners Analytics</title>
+
+    <!-- CSS libraries here... -->
+    <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css">
+   
+    <!-- CSS in-code -->
+    <style>
+        .top-buffer { margin-top:10px; }
+    </style>
+</head>
+<body>
+    <!-- Design the Dashboard layout -->
+    <div class="container">
+        <!-- partial -->
+        <div class="main">
+            <!-- Course Rings -->                   
+            <div class="row top-buffer">
+                <div class="col-md-12">
+                    <div class="row">                                
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="goal-metric-container">
+                                        <div class="d-flex align-items-center">
+                                            <div id="total-course"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="d-flex align-items-center">
+                                        <span class="icon-footer-label center-item font-weight-normal">Total Course</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card">
+                                    <div class="card-body">
+                                        <div class="goal-metric-container">
+                                            <div class="d-flex align-items-center">
+                                                <div id="course-taken"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer">
+                                        <div class="d-flex align-items-center">
+                                            <span class="icon-footer-label center-item font-weight-normal">Course Taken</span>
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card">
+                                    <div class="card-body">
+                                        <div class="goal-metric-container">
+                                            <div class="d-flex align-items-center">
+                                                <div id="outstanding-course"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer">
+                                        <div class="d-flex align-items-center">
+                                            <span class="icon-footer-label center-item font-weight-normal">Outstanding Course</span>
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+
+                    </div>
+                </div> 
+            </div>
+            <!-- Pie and Bar chart -->
+            <div class="row top-buffer">
+                <div class="col-md-12">
+                    <div class="row">                                
+                        <div class="col-md-5">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="goal-metric-container">
+                                        <div class="d-flex align-items-center">
+                                            <div id="grade-pie"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="d-flex align-items-center">
+                                        <span class="icon-footer-label center-item font-weight-normal">Grades</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="card">
+                                    <div class="card-body">
+                                        <div class="goal-metric-container">
+                                            <div class="d-flex align-items-center">
+                                                <div id="performance-bar"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer">
+                                        <div class="d-flex align-items-center">
+                                            <span class="icon-footer-label center-item font-weight-normal">Performance by Course</span>
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                </div> 
+            </div>
+            <!-- Line and doughnut chart -->
+            <div class="row top-buffer">
+                <div class="col-md-12">
+                    <div class="row">                                
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                        <div class="d-flex align-items-center">
+                                            <div id="performance-line"></div>
+                                        </div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="d-flex align-items-center">
+                                        <span class="icon-footer-label center-item font-weight-normal">Performance Trend</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="goal-metric-container">
+                                        <div class="d-flex align-items-center">
+                                            <div id="course-validity-doughnut"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="d-flex align-items-center">
+                                        <span class="icon-footer-label center-item font-weight-normal">Course Validity</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+            </div>
+            <!-- Stacked bar chart -->
+            <div class="row top-buffer">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="goal-metric-container">
+                                <div class="d-flex align-items-center">
+                                    <div id="exam-duration-bar"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex align-items-center">
+                                <span class="icon-footer-label center-item font-weight-normal">Exam Duration</span>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+            </div>
+            <!-- Pictorial and guage chart -->
+            <div class="row top-buffer">
+                <div class="col-md-12">
+                    <div class="row"> 
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="goal-metric-container">
+                                        <div class="d-flex align-items-center">
+                                            <div id="performance-pictorial"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="d-flex align-items-center">
+                                        <span class="icon-footer-label center-item font-weight-normal">Overall Performance</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="goal-metric-container">
+                                        <div class="d-flex align-items-center">
+                                            <div id="course-performance-gauge"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="d-flex align-items-center">
+                                        <span class="icon-footer-label center-item font-weight-normal">Performance Per Course</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div> 
+            </div>
+            <!-- Sankey chart -->
+            <div class="row top-buffer">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="goal-metric-container">
+                                <div class="d-flex align-items-center">
+                                    <div id="performance-comparison-sankey"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex align-items-center">
+                                <span class="icon-footer-label center-item font-weight-normal">Performance Comparison</span>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+            </div>
+            <!-- content-wrapper ends -->
+            <!-- partial:partials/_footer.html -->
+            <footer class="footer">
+                <div class="d-sm-flex justify-content-center justify-content-sm-between">
+                    <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Copyright © 2019 <a
+                            href="http://www.fiverr.com/CodeWhale/" target="_blank">CodeWhale</a>- All rights
+                        reserved.</span>
+                </div>
+            </footer>
+            <!-- partial -->
+        </div>
+        <!-- main-panel ends -->
+    </div>
+
+    <!-- JavaScript libraries here... -->
+    <script src="lib/jquery/jquery.min.js"></script>
+    <script src="lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/d3v5/d3.min.js"></script>
+    <script src="graphics.js"></script>
+</body>
+</html>
