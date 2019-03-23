@@ -181,7 +181,7 @@ function drawPieChart(){
       var pie = d3.pie()
                   .sort(null)
                   .value(function(d){ return d.count; })(grades);
-      console.log(pie)
+      logger(pie)
       //define the arc around the pie-s
       let arc = d3.arc()
                   .innerRadius(0)
@@ -503,7 +503,7 @@ function drawBarChart(){
                             .attr('id', 'line-gradient')
                             .attr("gradientUnits", "userSpaceOnUse")
                             .attr('x1', 0).attr('x2', 0)
-                            .attr('y1', y(performance-30))
+                            .attr('y1', y(90))
                             .selectAll('stop')
                           .data([
                                 {offset: '0%', color: 'aqua'},
@@ -631,8 +631,217 @@ function drawBarChart(){
 
 
 /**
-  * TASK 5:: IMPLEMENTATION OF LINE CHART
+  * TASK 5:: IMPLEMENTATION OF DONUT CHART
   */
+ function donutDataProcessor(divId){
+    //The data combination will be the courses and their status
+    let data = [
+      {course: 'P5', status: 'running'},
+      {course: 'Engexam1', status: 'running'},
+      {course: 'P2', status: 'completed'},
+      {course: 'P3', status: 'completed'},
+      {course: 'P4', status: 'expired'}
+    ];
+    let portionData = [
+      {status: 'running', proportion: 50},
+      {status: 'completed', proportion: 50},
+      {status: 'expired', proportion: 50}
+    ];
+
+    //instantiate chart 
+    var donutChart = drawDonutChart().data(data)
+                                      .portionData(portionData)
+                                      .divId(divId);
+
+    d3.select(divId).call(donutChart);
+
+ }//end processor
+ function drawDonutChart(){
+  //updatables
+  let data; //main data from database
+  let portionData; //defined for special use
+  let divId; //container id
+
+  function drawDonut(selection){
+    selection.each(function(){
+      // generate drawDonut
+      let containerWidth = parseInt(($(divId).parent().css('width')))
+      let svgWidth = containerWidth, svgHeight = containerWidth*.65,
+          margin = {top: 10, bottom: 10, right: 10, left: 10},
+          width = svgWidth - margin.left, height = svgHeight - margin.bottom;            
+
+      var containerDiv = d3.select(this)
+      var svg = containerDiv.append('svg')
+                      .attr('width', svgWidth)
+                      .attr('height', svgHeight)
+                    .append('g')
+                      .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+
+      let colour = d3.scaleOrdinal(d3.schemeCategory10);
+      const cornerRadius = 3;
+      const padAngle = 0.015;
+      const radius = Math.min(width, height) / 2;
+      // creates a new pie generator
+      var pie = d3.pie()
+          .value(function(d) { return d.proportion })
+          .sort(null);
+      //create the donut arc
+      var arc = d3.arc()
+          .outerRadius(radius * 0.8)
+          .innerRadius(radius * 0.6)
+          .cornerRadius(cornerRadius)
+          .padAngle(padAngle);
+
+      // this arc is used for aligning the text labels
+      var outerArc = d3.arc()
+          .outerRadius(radius * 0.9)
+          .innerRadius(radius * 0.9);
+
+      // g elements to keep elements within svg modular
+      svg.append('g').attr('class', 'slices');
+      svg.append('g').attr('class', 'labelName');
+      svg.append('g').attr('class', 'lines');
+
+      // add and colour the donut slices
+      var path = svg.select('.slices')
+          .datum(portionData).selectAll('path')
+          .data(pie)
+        .enter().append('path')
+          .attr('fill', function(d) { return colour(d.data['status']); })
+          .attr('d', arc);
+
+      // add text labels
+      var label = svg.select('.labelName').selectAll('text')
+          .data(pie(portionData))
+        .enter().append('text')
+          .attr('dy', '.35em')
+          .html(function(d) {
+            logger(d.data);
+              // add "key: value" for given category. Number inside tspan is bolded in stylesheet.
+              return d.data['status'];// + ': <tspan>' + d.data['proportion'] + '</tspan>';
+          })
+          .attr('transform', function(d) {
+              //calculate the center of the slice
+              var pos = outerArc.centroid(d);
+
+              // changes the point to be on left or right depending on where label is.
+              pos[0] = radius * 0.95 * (midAngle(d) < Math.PI ? 1 : -1);
+              return 'translate(' + pos + ')';
+          })
+          .style('text-anchor', function(d) {
+              // if slice centre is on the left, anchor text to start, otherwise anchor to end
+              return (midAngle(d)) < Math.PI ? 'start' : 'end';
+          });
+
+      // add lines connecting labels to slice. A polyline creates straight lines connecting several points
+      var polyline = svg.select('.lines')
+          .selectAll('polyline')
+          .data(pie(portionData))
+        .enter().append('polyline')
+          .attr('points', function(d) {
+
+              // see label transform function for explanations of these three lines.
+              var pos = outerArc.centroid(d);
+              pos[0] = radius * 0.95 * (midAngle(d) < Math.PI ? 1 : -1);
+              return [arc.centroid(d), outerArc.centroid(d), pos]
+          })
+          .attr('fill', 'none')
+          .attr('stroke', function(d){ return colour(d.data['status']); });
+      // add tooltip to mouse events on slices and labels
+      d3.selectAll('.labelName text, .slices path').call(toolTip);
+      
+
+      /** Work extra functions here */ 
+
+      // calculates the angle for the middle of a slice
+      function midAngle(d) { return d.startAngle + (d.endAngle - d.startAngle) / 2; }
+
+      // function that creates and adds the tool tip to a selected element
+      function toolTip(selection) {
+
+          // add tooltip (svg circle element) when mouse enters label or slice
+          selection.on('mouseenter', function (d) {
+
+              svg.append('text')
+                  .attr('class', 'toolCircle')
+                  .attr('dy', -15) // hard-coded. can adjust this to adjust text vertical alignment in tooltip
+                  .html(toolTipHTML(d)) // add text to the circle.
+                  .style('font-size', '.9em')
+                  .style('text-anchor', 'middle'); // centres text in tooltip
+
+              svg.append('circle')
+                  .attr('class', 'toolCircle')
+                  .attr('r', radius * 0.55) // radius of tooltip circle
+                  .style('fill', colour(d.data['status'])) // colour based on category mouse is over
+                  .style('fill-opacity', 0.35);
+
+          });
+
+          // remove the tooltip when mouse leaves the slice/label
+          selection.on('mouseout', function () {
+              d3.selectAll('.toolCircle').remove();
+          });
+      }
+
+      // function to create the HTML string for the tool tip. Loops through each key in data object
+      // and returns the html string key: value
+      function toolTipHTML(d) {
+
+        var tip = '',
+            i   = 0;
+
+            //nest the incoming data from the db
+            var result = d3.nest()
+                      .key(function(d){ return d['status'] })
+                      .entries(data);
+            //retrieve the status from the selected arc
+            let selectedStatus = d.data['status'];
+            let title, courseName ='';
+            //now use that selectedstatus to query the result
+            for(let j = 0; j<result.length; j++){
+
+              if(result[j].key == selectedStatus){
+                  
+                let temp = result[j].values;
+                title = '<tspan x="0">' + temp.length + ' courses ' + selectedStatus + '</tspan>';
+                
+                for(let k = 0; k<temp.length; k++){          
+                  courseName += '<tspan x="0" dy="1.2em">' + temp[k].course + '</tspan>';
+                }
+              }
+              
+            }
+            tip = title +''+ courseName;
+   
+          logger('==tip==')
+          logger(tip)
+          return tip;
+      }//end tooltip
+
+    });
+    }//end drawDonut
+
+    // getter and setter functions. See Mike Bostocks post "Towards Reusable drawDonuts" for a tutorial on how this works.
+    drawDonut.data = function(value) {
+        if (!arguments.length) return data;
+        data = value;
+        return drawDonut;
+    }
+
+    drawDonut.divId = function(value) {
+        if (!arguments.length) return divId;
+        divId = value;
+        return drawDonut;
+    }
+
+    drawDonut.portionData = function(value) {
+        if (!arguments.length) return portionData;
+        portionData = value;
+        return drawDonut;
+    }
+
+  return drawDonut;
+ }//end donutChart
 /**
  * ALL CHARTS POWERHOUSE: THIS TRIGGERS ALL CHARTS WHEN PAGE LOADS
  */
@@ -643,6 +852,7 @@ function learnersDashboard(){
   pieDataProcessor('#grade-pie');
   barDataProcessor('#performance-bar');
   lineDataProcessor('#performance-line');
+  donutDataProcessor('#course-status-doughnut');
 
 }//end learnersDashboard
 
